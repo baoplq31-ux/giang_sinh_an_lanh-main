@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Noel 🎄</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+    font-family: Arial, sans-serif;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  #snow {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .box {
+    background: rgba(255,255,255,0.12);
+    padding: 30px;
+    border-radius: 14px;
+    text-align: center;
+    z-index: 10;
+    width: 320px;
+  }
+
+  input, button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 6px;
+    border: none;
+    font-size: 16px;
+  }
+
+  button {
+    background: #e63946;
+    color: #fff;
+    cursor: pointer;
+  }
+
+  .hidden { display: none; }
+
+  /* ===== QUÀ ===== */
+  .gifts {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 120px;
+    z-index: 20;
+  }
+
+  .gift {
+    font-size: 90px;
+    cursor: pointer;
+    animation: float 5s ease-in-out infinite;
+  }
+
+  .gift.opened {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  @keyframes float {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-25px); }
+  }
+
+  @keyframes shake {
+    0% { transform: rotate(0); }
+    25% { transform: rotate(-10deg); }
+    50% { transform: rotate(10deg); }
+    75% { transform: rotate(-10deg); }
+    100% { transform: rotate(0); }
+  }
+
+  .shake { animation: shake 0.6s; }
+
+  .popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    background: rgba(0,0,0,0.85);
+    padding: 25px;
+    border-radius: 14px;
+    z-index: 999;
+    text-align: center;
+  }
+</style>
+</head>
+
+<body>
+
+<canvas id="snow"></canvas>
+
+<div class="box" id="loginBox">
+  <h2>🎄 Noel 🎄</h2>
+  <input type="password" id="password" placeholder="Mật khẩu">
+  <button onclick="checkPassword()">Xác nhận</button>
+</div>
+
+<div class="gifts" id="gifts" style="display:none">
+  <div class="gift" onclick="openGift(this)">🎁</div>
+  <div class="gift" onclick="openGift(this)">🎁</div>
+  <div class="gift" onclick="openGift(this)">🎁</div>
+</div>
+
+<script>
+const PASSWORD = "123456";
+const CUSTOM_URL = "noel_v2.html"; 
+let opened = 0;
+
+const giftsData = [
+  "🌟 Điều ước nhỏ: Luôn mỉm cười mỗi ngày",
+  "❤️ Món quà: Có người luôn quan tâm bạn",
+  "🎉 Bất ngờ Noel: Thành công sắp đến"
+];
+
+function checkPassword() {
+  if (password.value === PASSWORD) {
+    loginBox.style.display = "none";
+    gifts.style.display = "flex";
+  } else {
+    alert("Sai mật khẩu ❌");
+  }
+}
+
+function openGift(el) {
+  // ĐÃ MỞ ĐỦ 3 QUÀ → KHÔNG CHO MỞ TIẾP
+  if (opened >= 3) return;
+
+  if (el.classList.contains("opened")) return;
+
+  el.classList.add("shake");
+
+  setTimeout(() => {
+    el.classList.remove("shake");
+    el.classList.add("opened");
+    el.textContent = "✨";
+
+    showPopup(giftsData[opened]);
+    opened++;
+    if (opened === 3) {
+      setTimeout(() => {
+        document.getElementById("actionBox").classList.remove("hidden");
+      }, 600);
+    }
+
+    if (opened === 3) {
+      finalAction.classList.remove("hidden");
+
+      document.querySelectorAll(".gift:not(.opened)").forEach(g => {
+        g.style.opacity = "0.3";
+        g.style.pointerEvents = "none";
+      });
+    }
+  }, 600);
+}
+
+function showPopup(text) {
+  // CHỈ xóa popup quà tạm thời
+  document.querySelectorAll(".gift-popup").forEach(p => p.remove());
+
+  const p = document.createElement("div");
+  p.className = "popup gift-popup";
+  p.innerHTML = `
+    ${text}<br><br>
+    <button onclick="this.parentElement.remove()">Đóng</button>
+  `;
+  document.body.appendChild(p);
+}
+
+function goWish() {
+  window.location.href = "wish.html";
+}
+
+function goCustom() {
+  window.location.href = CUSTOM_URL;
+}
+
+/* ===== TUYẾT ===== */
+const canvas = document.getElementById("snow");
+const ctx = canvas.getContext("2d");
+let w = canvas.width = innerWidth;
+let h = canvas.height = innerHeight;
+
+const flakes = Array.from({length:120}, () => ({
+  x: Math.random()*w,
+  y: Math.random()*h,
+  r: Math.random()*3+1,
+  d: Math.random()+1
+}));
+
+function snow() {
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle = "rgba(255,255,255,0.8)";
+  ctx.beginPath();
+  flakes.forEach(f=>{
+    ctx.moveTo(f.x,f.y);
+    ctx.arc(f.x,f.y,f.r,0,Math.PI*2);
+  });
+  ctx.fill();
+
+  flakes.forEach(f=>{
+    f.y += f.d*f.d;
+    if (f.y>h) { f.y=0; f.x=Math.random()*w; }
+  });
+  requestAnimationFrame(snow);
+}
+snow();
+window.onload = () => {
+  if (location.hash === "#action") {
+    document.getElementById("loginBox")?.classList.add("hidden");
+    document.getElementById("gifts")?.classList.add("hidden");
+    document.getElementById("actionBox")?.classList.remove("hidden");
+  }
+};
+</script>
+<div class="popup hidden" id="actionBox">
+  <b>🎁 Bạn đã chọn đủ 3 món quà, hãy chọn điều bạn muốn xem tiếp?</b><br><br>
+  <button onclick="location.href='wish.html#action'">🎄 Xem lời chúc</button><br><br>
+  <button onclick="goCustom()">🔗 Trang khác</button>
+</div>
+</body>
+</html>
