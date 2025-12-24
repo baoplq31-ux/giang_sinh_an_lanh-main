@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Lời chúc 🎄</title>
+<link rel="website icon" type="png" href="icon noel.svg">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
   body {
@@ -92,6 +93,12 @@
 </style>
 </head>
 <body>
+<iframe
+  src="music.html"
+  style="display:none"
+  id="musicFrame">
+</iframe>
+
 
 <canvas id="fw"></canvas>
 
@@ -203,18 +210,10 @@ window.onresize = () => {
 const lines = [
   "🎄 Merry Christmas 🎄",
   "",
-  "Chúc bạn một mùa Giáng Sinh thật ấm áp,",
-  "nhiều niềm vui và hạnh phúc",
-  "bên những người bạn yêu thương ✨"
-];
-
-const noteText = document.getElementById("noteText");
-const lines = [
-  "🎄 Merry Christmas 🎄",
-  "",
-  "Chúc bạn một mùa Giáng Sinh thật ấm áp,",
-  "nhiều niềm vui và hạnh phúc",
-  "bên những người bạn yêu thương ✨"
+  "Chúc em có một mùa Giáng Sinh thật ấm áp,",
+  "đạt điểm cao ở các bài kiểm tra",
+  "có thật nhiều niềm vui và hạnh phúc",
+  "bên những người em yêu thương ✨"
 ];
 
 const noteText = document.getElementById("noteText");
@@ -240,14 +239,14 @@ function typeText() {
     noteText.children[line].innerHTML = currentLine;
     line++;
     char = 0;
-    setTimeout(typeText, 400); // nghỉ giữa các dòng
+    setTimeout(typeText, 500); // nghỉ giữa các dòng
   } else {
-    setTimeout(typeText, 45); // tốc độ gõ
+    setTimeout(typeText, 150); // tốc độ gõ
   }
 }
 
 function goBack() {
-  window.location.href = "index.html#action";
+  window.location.href = "index.html";
 }
 
 </script>

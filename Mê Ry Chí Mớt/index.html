@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>Noel 🎄</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="website icon" type="png" href="icon noel.svg">
 <style>
   body {
     margin: 0;
@@ -54,14 +55,11 @@
   .gifts {
     position: fixed;
     inset: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 120px;
     z-index: 20;
   }
 
   .gift {
+    position: absolute;
     font-size: 90px;
     cursor: pointer;
     animation: float 5s ease-in-out infinite;
@@ -98,35 +96,87 @@
     z-index: 999;
     text-align: center;
   }
+
+  .box {
+    position: absolute;
+  }
+
 </style>
 </head>
 
 <body>
+<iframe
+  src="music.html"
+  style="display:none"
+  id="musicFrame">
+</iframe>
 
 <canvas id="snow"></canvas>
+<div class="box" id="introBox">
+  <h2>🎄 Một lời nhắn nhỏ</h2>
+  <p style="line-height:1.6">
+    Wow vậy bây giờ đã là giáng sinh rồi đó ư,<br>
+    tui có 1 món quà dành tặng cho bạn,<br>
+    mở quà cho vui nhé! Và nhớ ghi lại màn hình để xem lại sau này” ✨
+  </p>
+  <button onclick="startExperience()">🎁 Bắt đầu</button>
+</div>
 
-<div class="box" id="loginBox">
+<div class="box hidden" id="loginBox">
   <h2>🎄 Noel 🎄</h2>
   <input type="password" id="password" placeholder="Mật khẩu">
   <button onclick="checkPassword()">Xác nhận</button>
 </div>
 
 <div class="gifts" id="gifts" style="display:none">
-  <div class="gift" onclick="openGift(this)">🎁</div>
-  <div class="gift" onclick="openGift(this)">🎁</div>
-  <div class="gift" onclick="openGift(this)">🎁</div>
+  <div class="gift" data-id="0" onclick="openGift(this)">🎁</div>
+  <div class="gift" data-id="1" onclick="openGift(this)">🎁</div>
+  <div class="gift" data-id="2" onclick="openGift(this)">🎁</div>
+  <div class="gift" data-id="3" onclick="openGift(this)">🎁</div>
+  <div class="gift" data-id="4" onclick="openGift(this)">🎁</div>
+  <div class="gift" data-id="5" onclick="openGift(this)">🎁</div>
 </div>
 
 <script>
-const PASSWORD = "123456";
-const CUSTOM_URL = "noel_v2.html"; 
-let opened = 0;
+  function startApp() {
+  document.getElementById("musicFrame").src = "music.html";
+}
 
-const giftsData = [
-  "🌟 Điều ước nhỏ: Luôn mỉm cười mỗi ngày",
-  "❤️ Món quà: Có người luôn quan tâm bạn",
-  "🎉 Bất ngờ Noel: Thành công sắp đến"
+function startExperience() {
+  document.getElementById("introBox").classList.add("hidden");
+  document.getElementById("loginBox").classList.remove("hidden");
+
+  // kích hoạt iframe nhạc (user interaction → không bị chặn)
+  document.getElementById("musicFrame").src = "music.html";
+}
+
+let openedCount = Number(localStorage.getItem("openedCount")) || 0;
+let openedGifts = JSON.parse(localStorage.getItem("openedGifts")) || [];
+let stage = localStorage.getItem("stage") || "login";
+let isOpening = false; // khóa animation
+const PASSWORD = "1";
+const CUSTOM_URL = "noel_v2.html"; 
+
+const giftPool = [
+  "🌟 Hẵn 50k luôn mở hay ta",
+  "❤️ Wow bốc trúng 1 ly trà sữa nhé",
+  "🎉 Trúng được quà 20k nè",
+  "🍀 Không có quà rồi. Chúc may mắn lần sau",
+  "✨ Quà này hơi nhỏ 10k thoi",
+  "🎄 Bịch bánh nè",
+  "💌 Combo bánh tráng, trà sữa"
 ];
+
+function assignRandomGifts() {
+  const gifts = document.querySelectorAll(".gift");
+
+  const shuffled = [...giftPool].sort(() => Math.random() - 0.5);
+
+  gifts.forEach((gift, index) => {
+    gift.dataset.gift =
+      shuffled[index % shuffled.length];
+  });
+}
 
 function checkPassword() {
   if (password.value === PASSWORD) {
@@ -138,11 +188,14 @@ function checkPassword() {
 }
 
 function openGift(el) {
-  // ĐÃ MỞ ĐỦ 3 QUÀ → KHÔNG CHO MỞ TIẾP
-  if (opened >= 3) return;
+  if (isOpening) return;
 
-  if (el.classList.contains("opened")) return;
+  const id = Number(el.dataset.id);
 
+  if (openedGifts.includes(id)) return;
+  if (openedCount >= 3) return;
+
+  isOpening = true;
   el.classList.add("shake");
 
   setTimeout(() => {
@@ -150,22 +203,20 @@ function openGift(el) {
     el.classList.add("opened");
     el.textContent = "✨";
 
-    showPopup(giftsData[opened]);
-    opened++;
-    if (opened === 3) {
-      setTimeout(() => {
-        document.getElementById("actionBox").classList.remove("hidden");
-      }, 600);
+    openedCount++;
+    openedGifts.push(id);
+
+    localStorage.setItem("openedCount", openedCount);
+    localStorage.setItem("openedGifts", JSON.stringify(openedGifts));
+
+    showPopup(el.dataset.gift);
+
+    if (openedCount === 3) {
+      localStorage.setItem("stage", "action");
+      showActionBox();
     }
 
-    if (opened === 3) {
-      finalAction.classList.remove("hidden");
-
-      document.querySelectorAll(".gift:not(.opened)").forEach(g => {
-        g.style.opacity = "0.3";
-        g.style.pointerEvents = "none";
-      });
-    }
+    isOpening = false;
   }, 600);
 }
 
@@ -188,6 +239,10 @@ function goWish() {
 
 function goCustom() {
   window.location.href = CUSTOM_URL;
+}
+
+function goExtra() {
+  window.location.href = "noel_v3.html";
 }
 
 /* ===== TUYẾT ===== */
@@ -220,18 +275,52 @@ function snow() {
   requestAnimationFrame(snow);
 }
 snow();
+
 window.onload = () => {
-  if (location.hash === "#action") {
-    document.getElementById("loginBox")?.classList.add("hidden");
-    document.getElementById("gifts")?.classList.add("hidden");
-    document.getElementById("actionBox")?.classList.remove("hidden");
+  randomizeGiftPositions();
+  assignRandomGifts();
+  document.querySelectorAll(".gift").forEach(gift => {
+  const id = Number(gift.dataset.id);
+  if (openedGifts.includes(id)) {
+    gift.classList.add("opened");
+    gift.textContent = "✨";
+    gift.style.pointerEvents = "none";
+  }
+});
+  if (stage === "action") {
+    loginBox.classList.add("hidden");
+    gifts.style.display = "none";
+    showActionBox();
   }
 };
+
+function randomizeGiftPositions() {
+  const gifts = document.querySelectorAll(".gift");
+
+  gifts.forEach(gift => {
+    const top = Math.random() * 60 + 15;   // 15% → 75%
+    const left = Math.random() * 70 + 10;  // 10% → 80%
+
+    gift.style.top = top + "%";
+    gift.style.left = left + "%";
+  });
+}
+
+function showActionBox() {
+  document.getElementById("actionBox").classList.remove("hidden");
+
+  document.querySelectorAll(".gift:not(.opened)").forEach(g => {
+    g.style.opacity = "0.3";
+    g.style.pointerEvents = "none";
+  });
+}
+
 </script>
 <div class="popup hidden" id="actionBox">
   <b>🎁 Bạn đã chọn đủ 3 món quà, hãy chọn điều bạn muốn xem tiếp?</b><br><br>
-  <button onclick="location.href='wish.html#action'">🎄 Xem lời chúc</button><br><br>
-  <button onclick="goCustom()">🔗 Trang khác</button>
+  <button onclick="location.href='wish.html#action'">✉️ Xem lời chúc</button><br><br>
+  <button onclick="goCustom()">🎄 Xem cây noel</button>
+  <button onclick="goExtra()">⭐ Xem cây khác</button>
 </div>
 </body>
 </html>
